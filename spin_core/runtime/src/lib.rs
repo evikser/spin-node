@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use borsh::{BorshDeserialize, BorshSerialize};
-use spin_primitives::{Block, SignedTransaction};
+use spin_primitives::{Block, ExecutionOutcome, SignedTransaction};
+use tracing::debug;
 
 pub mod context;
 pub mod executor;
@@ -12,6 +15,7 @@ pub struct SpinNode {
 
 impl SpinNode {
     pub fn new(db_path: String) -> Self {
+        debug!(db_path, "Starting node");
         Self {
             db: sled::open(db_path).unwrap(),
             txs_pool: std::collections::VecDeque::new(),
@@ -24,7 +28,9 @@ impl SpinNode {
             hash: [0; 32],
             parent_hash: [0; 32],
             timestamp: 0,
-            txs: vec![],
+            txs: Default::default(),
+            execution_outcomes: Default::default(),
+            sessions: Default::default(),
         };
 
         self.insert_block(genesis_block);
@@ -66,14 +72,32 @@ impl SpinNode {
     }
 
     pub fn produce_block(&mut self) -> Block {
-        let txs = self.txs_pool.drain(0..3).collect::<Vec<_>>();
+        let latest_block = self.latest_block();
+        let txs = self.txs_pool.drain(0..1).collect::<Vec<_>>();
+        let mut execution_outcomes = HashMap::new();
+        let mut sessions = HashMap::new();
+        for tx in &txs {
+            let session = executor::bootstrap_tx(self.db.clone(), tx.clone()).unwrap();
+            let outcome = ExecutionOutcome::try_from_bytes(session.journal.clone()).unwrap();
+            let session = serde_json::to_string(&session).unwrap();
+            execution_outcomes.insert(tx.tx.hash, outcome);
+            sessions.insert(tx.tx.hash, session);
+        }
 
-        unimplemented!()
+        Block {
+            height: latest_block.height + 1,
+            hash: [0; 32],
+            parent_hash: latest_block.hash,
+            timestamp: 0,
+            txs,
+            execution_outcomes,
+            sessions,
+        }
     }
 }
 
 #[cfg(test)]
-mod ests {
+mod tests {
     use super::*;
 
     #[test]

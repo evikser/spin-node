@@ -127,9 +127,10 @@ impl ExecutionOutcome {
     }
 }
 
-const SYSTEM_META_CONTRACT_ACCOUNT_ID: &str = "spin";
+pub const SYSTEM_META_CONTRACT_ACCOUNT_ID: &str = "spin";
+pub const EVM_ETA_CONTRACT_ACCOUNT_ID: &str = "evm";
 
-#[derive(Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
 pub struct Transaction {
     pub hash: Digest,
     pub body: TransactionBody,
@@ -144,7 +145,7 @@ impl Transaction {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
 pub struct TransactionBody {
     pub contract: AccountId,
     pub method: String,
@@ -162,6 +163,10 @@ impl TransactionBody {
         use sha2::{Digest as _, Sha256};
         let hash = Sha256::digest(self.try_to_vec().unwrap());
         hash.try_into().unwrap()
+    }
+
+    pub fn try_deserialize_args<T: BorshDeserialize>(&self) -> std::io::Result<T> {
+        borsh::BorshDeserialize::deserialize(&mut self.args.as_slice())
     }
 }
 
@@ -230,7 +235,7 @@ impl TransactionBuilder {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, BorshSerialize, BorshDeserialize)]
 pub struct SignedTransaction {
     pub tx: Transaction,
     pub signature: Vec<u8>, // TODO
@@ -242,5 +247,7 @@ pub struct Block {
     pub hash: Digest,
     pub parent_hash: Digest,
     pub timestamp: u64,
-    pub txs: Vec<Transaction>,
+    pub txs: Vec<SignedTransaction>,
+    pub execution_outcomes: HashMap<Digest, ExecutionOutcome>,
+    pub sessions: HashMap<Digest, String>, // TODO: replace json to struct
 }

@@ -40,24 +40,17 @@ impl Syscall for GetStorageCallHandler {
         let from_guest = syscall_ctx.load_region(buf_ptr, buf_len);
         let key = String::from_utf8(from_guest).unwrap();
 
-        // TODO: don't use files as contract state storage xD
-        let storage: Option<Vec<u8>> = std::fs::read(format!(
-            "./state/storage/{}.{}",
-            key,
-            context.call().account.to_string()
-        ))
-        .map(Some)
-        .unwrap_or_else(|e| match e.kind() {
-            std::io::ErrorKind::NotFound => {
-                debug!(
-                    "No storage found for key {:?} in {:?}",
-                    key,
-                    context.call().account
-                );
-                None
-            }
-            _ => todo!(),
-        });
+        let db_key = format!(
+            "committed_storage.{}.{}",
+            context.call().account.to_string(),
+            key
+        );
+
+        let storage = context
+            .db
+            .get(db_key)
+            .expect("Failed to get storage from db")
+            .map(|v| v.to_vec());
 
         // let hash = {
         //     let algorithm = &mut Sha256::default();
@@ -114,16 +107,16 @@ impl risc0_zkvm::Syscall for SetStorageCallHandler {
 
         debug!(contract=?context.call().account, key=?request.key, new_hash = bytes_to_hex_string(hash2.as_slice()), "Updating storage");
 
-        // TODO: don't use files as contract state storage xD
-        std::fs::write(
-            format!(
-                "./state/storage/{}.{}",
-                request.key,
-                context.call().account.to_string()
-            ),
-            request.storage,
-        )
-        .unwrap();
+        let db_key = format!(
+            "committed_storage.{}.{}",
+            context.call().account.to_string(),
+            request.key
+        );
+
+        context
+            .db
+            .insert(db_key, request.storage)
+            .expect("Failed to insert storage to db");
 
         Ok((0, 0))
     }

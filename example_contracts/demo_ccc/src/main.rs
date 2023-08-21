@@ -1,5 +1,7 @@
 #![no_main]
 
+use spin_sdk::spin_primitives::ExecutionOutcome;
+
 struct Contract;
 
 #[spin_sdk_macros::contract]
@@ -8,12 +10,14 @@ impl Contract {
         let n = input.0;
         let multiplier = input.1;
 
-        let result: u64 = env::cross_contract_call(
+        let outcome: ExecutionOutcome = env::cross_contract_call(
             AccountId::new("fibonacci.spin".to_string()),
             "entypoint".to_string(),
             10_000,
             n as u32,
         );
+
+        let result: u64 = outcome.try_deserialize_output().unwrap();
 
         let result = result * multiplier;
 
@@ -25,7 +29,7 @@ impl Contract {
         let recipient = input.1;
         let amount = input.2;
 
-        let _: () = env::cross_contract_call(
+        let _ = env::cross_contract_call(
             token_account,
             "transfer".to_string(),
             1_000_000,

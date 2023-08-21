@@ -1,4 +1,160 @@
-fn main() {}
+use borsh::{BorshDeserialize, BorshSerialize};
+use playgrounds::{init_temp_node, install_tracing};
+use spin_primitives::{
+    AccountId, Block, Digest, ExecutionOutcome, SignedTransaction, SYSTEM_META_CONTRACT_ACCOUNT_ID,
+};
+use tracing::info;
+
+// TODO: move to spin_primitives
+#[derive(BorshDeserialize, BorshSerialize, Debug)]
+struct Account {
+    pub account_id: AccountId,
+    pub public_key: Vec<u8>,
+    pub code_hash: Digest,
+    pub balance: u128,
+    pub nonce: u64,
+}
+
+fn main() {
+    install_tracing();
+
+    let mut node = init_temp_node();
+
+    let latest_block = node.latest_block();
+    let fibonacci = AccountId::new(String::from("fibonacci.spin"));
+
+    let tx = create_account(&latest_block, fibonacci.clone());
+    let tx_hash = tx.tx.hash;
+    node.add_tx(tx);
+    let block = node.produce_block();
+    let outcome = block.execution_outcomes.get(&tx_hash).unwrap();
+    info!(?outcome, "Outcome");
+
+    let tx = account_info(&latest_block, fibonacci.clone());
+    let tx_hash = tx.tx.hash;
+    node.add_tx(tx);
+    let block = node.produce_block();
+    let outcome = block.execution_outcomes.get(&tx_hash).unwrap();
+    let account: Account = BorshDeserialize::deserialize(&mut outcome.output.as_slice()).unwrap();
+    info!(?account, "Account");
+
+    let tx = deploy_contract(
+        &latest_block,
+        fibonacci.clone(),
+        include_bytes!("../../../../example_contracts/target/riscv-guest/riscv32im-risc0-zkvm-elf/release/fibonacci_contract").to_vec(),
+    );
+    let tx_hash = tx.tx.hash;
+    node.add_tx(tx);
+    let block = node.produce_block();
+    let outcome = block.execution_outcomes.get(&tx_hash).unwrap();
+    info!(?outcome, "Outcome");
+
+    let tx = account_info(&latest_block, fibonacci.clone());
+    let tx_hash = tx.tx.hash;
+    node.add_tx(tx);
+    let block = node.produce_block();
+    let outcome = block.execution_outcomes.get(&tx_hash).unwrap();
+    let account: Account = BorshDeserialize::deserialize(&mut outcome.output.as_slice()).unwrap();
+    info!(?account, "Account");
+
+    // call fibonacci
+    let n = 10u32;
+    let tx = spin_primitives::TransactionBuilder::new(
+        fibonacci.clone(),
+        "fibonacci".to_string(),
+        BorshSerialize::try_to_vec(&n).unwrap(),
+        100_000_000,
+        AccountId::new("".to_string()),
+        &latest_block,
+    )
+    .build();
+
+    let tx = SignedTransaction {
+        tx,
+        signature: Default::default(),
+    };
+    let tx_hash = tx.tx.hash;
+    node.add_tx(tx);
+    let block = node.produce_block();
+    let outcome = block.execution_outcomes.get(&tx_hash).unwrap();
+    let outcome: ExecutionOutcome =
+        BorshDeserialize::deserialize(&mut outcome.output.as_slice()).unwrap();
+    let output: u64 = outcome.try_deserialize_output().unwrap();
+    info!(?output, n, "fibonacci");
+}
+
+fn account_info(latest_block: &Block, account_id: AccountId) -> SignedTransaction {
+    let tx = spin_primitives::TransactionBuilder::new(
+        AccountId::new(String::from(SYSTEM_META_CONTRACT_ACCOUNT_ID)),
+        "account_info".to_string(),
+        BorshSerialize::try_to_vec(&account_id.to_string()).unwrap(),
+        100_000_000,
+        AccountId::new("".to_string()),
+        &latest_block,
+    )
+    .build();
+
+    SignedTransaction {
+        tx,
+        signature: Default::default(),
+    }
+}
+
+fn create_account(latest_block: &Block, account_id: AccountId) -> SignedTransaction {
+    #[derive(BorshDeserialize, BorshSerialize)]
+    struct AccountCreationRequest {
+        pub account_id: AccountId,
+        pub public_key: Vec<u8>,
+    }
+
+    let args = AccountCreationRequest {
+        account_id,
+        public_key: Vec::new(),
+    };
+
+    let tx = spin_primitives::TransactionBuilder::new(
+        AccountId::new(String::from(SYSTEM_META_CONTRACT_ACCOUNT_ID)),
+        "create_account".to_string(),
+        BorshSerialize::try_to_vec(&args).unwrap(),
+        100_000_000,
+        AccountId::new("".to_string()),
+        &latest_block,
+    )
+    .build();
+
+    SignedTransaction {
+        tx,
+        signature: Default::default(),
+    }
+}
+
+fn deploy_contract(
+    latest_block: &Block,
+    account_id: AccountId,
+    code: Vec<u8>,
+) -> SignedTransaction {
+    #[derive(BorshDeserialize, BorshSerialize)]
+    struct ContractDeploymentRequest {
+        pub code: Vec<u8>,
+    }
+
+    let args = ContractDeploymentRequest { code };
+
+    let tx = spin_primitives::TransactionBuilder::new(
+        AccountId::new(String::from(SYSTEM_META_CONTRACT_ACCOUNT_ID)),
+        "deploy_contract".to_string(),
+        BorshSerialize::try_to_vec(&args).unwrap(),
+        100_000_000,
+        account_id,
+        &latest_block,
+    )
+    .build();
+
+    SignedTransaction {
+        tx,
+        signature: Default::default(),
+    }
+}
 
 // use tracing::info;
 

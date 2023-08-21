@@ -1,5 +1,6 @@
 use anyhow::Result;
 use risc0_zkvm::Session;
+use tracing::{debug, field::debug};
 
 use std::{
     str::FromStr,
@@ -12,15 +13,18 @@ pub struct ExecutionContext {
     call: ContractEntrypointContext,
     used_gas: u64,
 
+    pub db: sled::Db,
+
     cross_contract_calls: Vec<Arc<RwLock<ExecutionContext>>>,
     session: Option<Session>,
 }
 
 impl ExecutionContext {
-    pub fn new(call: ContractEntrypointContext) -> Self {
+    pub fn new(call: ContractEntrypointContext, db: sled::Db) -> Self {
         Self {
             call,
             used_gas: 0,
+            db,
             cross_contract_calls: Vec::new(),
             session: None,
         }
@@ -37,9 +41,13 @@ impl ExecutionContext {
             attached_gas,
         } = req;
 
-        if self.available_gas() < req.attached_gas {
-            return Err(anyhow::anyhow!("Not enough gas"));
-        }
+        // if self.available_gas() < req.attached_gas {
+        //     return Err(anyhow::anyhow!(
+        //         "Not enough gas, available: {}, attached: {}",
+        //         self.available_gas(),
+        //         req.attached_gas
+        //     ));
+        // }
 
         let call = ContractEntrypointContext {
             account,
@@ -53,6 +61,7 @@ impl ExecutionContext {
         let context = Arc::new(RwLock::new(ExecutionContext {
             call,
             used_gas: 0,
+            db: self.db.clone(),
             cross_contract_calls: Vec::new(),
             session: None,
         }));

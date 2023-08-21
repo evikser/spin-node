@@ -13,18 +13,18 @@ struct Contract;
 impl Contract {
     pub fn init() {
         let state = State { value: 0 };
-        env::set_state(String::from("root"), state);
+        env::set_storage(String::from("root"), state);
     }
 
     pub fn get() {
-        let state: State = env::get_state(String::from("root")).unwrap();
+        let state: State = env::get_storage(String::from("root")).unwrap();
         env::commit(state);
     }
 
     pub fn add() {
-        let mut state: State = env::get_state(String::from("root")).unwrap();
+        let mut state: State = env::get_storage(String::from("root")).unwrap();
         state.value += 1;
 
-        env::set_state(String::from("root"), state);
+        env::set_storage(String::from("root"), state);
     }
 }

@@ -9,6 +9,9 @@ name = "erc20"
 [[bin]]
 name = "example_token"
 
+[[bin]]
+name = "fibonacci"
+
 [dependencies]
 spin_runtime = { path = "../runtime" }
 spin_primitives = { path = "../primitives" }

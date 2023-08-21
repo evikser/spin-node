@@ -7,7 +7,7 @@ edition = "2021"
 risc0-build = { version = "0.16.1" }
 
 [package.metadata.risc0]
-methods = ["evm"]
+methods = ["root", "evm"]
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]

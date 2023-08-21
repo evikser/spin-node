@@ -9,4 +9,4 @@ edition = "2021"
 risc0-zkvm = { version = "0.16.1", default-features = false, features = [ "std" ] }
 spin_sdk = { path = "../../spin_sdk/sdk" }
 spin_sdk_macros = { path = "../../spin_sdk/macros" }
-borsh = "0.10.3"
+borsh = { git = "ssh://github.com/near/borsh-rs", branch = "master", features = ["derive"] }

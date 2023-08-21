@@ -33,6 +33,15 @@ impl CrossContractCallRequest {
             attached_gas,
         }
     }
+
+    pub fn new_raw(contract: AccountId, method: String, args: Vec<u8>, attached_gas: u64) -> Self {
+        Self {
+            contract,
+            method,
+            args,
+            attached_gas,
+        }
+    }
 }
 
 pub const GET_STORAGE_CALL: risc0_zkvm_platform::syscall::SyscallName = unsafe {
