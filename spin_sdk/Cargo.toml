@@ -3,3 +3,39 @@ members = [
     "sdk",
     "macros",
 ]
+
+[workspace.dependencies.risc0-build]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+
+[workspace.dependencies.risc0-build-kernel]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+
+[workspace.dependencies.risc0-circuit-rv32im]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+default-features = false
+
+[workspace.dependencies.risc0-core]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+default-features = false
+
+[workspace.dependencies.risc0-zkp]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+default-features = false
+
+[workspace.dependencies.risc0-zkvm]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+default-features = false
+
+[workspace.dependencies.risc0-zkvm-methods]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"
+
+[workspace.dependencies.risc0-zkvm-platform]
+git = "https://github.com/medvedNick/risc0.git"
+rev = "34794fce4a4486db59700cf5e056efb8ef6098ba"

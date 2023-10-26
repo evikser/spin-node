@@ -1,9 +1,0 @@
-{
-    "rust-analyzer.linkedProjects": [
-        "./demo_ccc/Cargo.toml",
-        "./fibonacci/Cargo.toml",
-        "./counter/Cargo.toml",
-        "./playground/Cargo.toml",
-        "./token/Cargo.toml",
-    ]
-}

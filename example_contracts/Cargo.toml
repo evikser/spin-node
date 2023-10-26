@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [build-dependencies]
-risc0-build = { version = "0.16.1" }
+risc0-build = { git = "https://github.com/medvednick/risc0.git", rev = "34794fce4a4486db59700cf5e056efb8ef6098ba" }
 
 [package.metadata.risc0]
-methods = ["demo_ccc", "fibonacci", "counter", "token", "playground"]
+methods = ["fibonacci", "counter", "token", "playground"]
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]

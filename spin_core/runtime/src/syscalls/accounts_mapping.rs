@@ -33,7 +33,7 @@ impl Syscall for AccountsMappingHandler {
 
         let buf_ptr = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A3);
         let buf_len = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A4);
-        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len);
+        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len).unwrap();
 
         let account_id = AccountId::new(String::from_utf8(from_guest).unwrap());
         debug!(of_account_id=?account_id);

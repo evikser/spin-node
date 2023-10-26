@@ -37,7 +37,7 @@ impl Syscall for GetStorageCallHandler {
 
         let buf_ptr = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A3);
         let buf_len = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A4);
-        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len);
+        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len).unwrap();
         let key = String::from_utf8(from_guest).unwrap();
 
         // TODO: don't use files as contract state storage xD
@@ -104,7 +104,7 @@ impl risc0_zkvm::Syscall for SetStorageCallHandler {
 
         let buf_ptr = ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A3);
         let buf_len = ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A4);
-        let from_guest = ctx.load_region(buf_ptr, buf_len);
+        let from_guest = ctx.load_region(buf_ptr, buf_len).unwrap();
 
         let request: SetStorageRequest =
             BorshDeserialize::deserialize(&mut from_guest.as_slice()).unwrap();

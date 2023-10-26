@@ -10,9 +10,10 @@ spin_primitives = { path = "../primitives" }
 meta_contracts = { path = "../meta_contracts" }
 
 anyhow = "1.0.72"
-risc0-zkvm = { version = "0.16.1", features = ["cuda"] }
-risc0-zkp = { version = "0.16.1"}
-risc0-zkvm-platform = { version = "0.16.1" }
+risc0-zkvm = { workspace = true, features = ["prove"] }
+risc0-zkp = { workspace = true }
+risc0-zkvm-platform = { workspace = true }
+
 serde = { version = "1.0.171", features = ["derive"] }
 borsh = "0.10.3"
 tracing = "0.1.36"

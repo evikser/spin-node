@@ -3,3 +3,9 @@
 **/.envrc
 
 /spin_core/state
+
+/verifyer/node_modules
+/verifyer/artifacts
+/verifyer/cache
+/verifyer/typechain-types
+.DS_Store

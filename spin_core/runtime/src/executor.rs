@@ -91,7 +91,7 @@ pub fn execute(context: Arc<RwLock<ExecutionContext>>) -> Result<risc0_zkvm::Ses
 
         let program = risc0_zkvm::Program::load_elf(&elf, MAX_MEMORY)?;
         let image = risc0_zkvm::MemoryImage::new(&program, PAGE_SIZE)?;
-        risc0_zkvm::LocalExecutor::new(env, image, program.entry)
+        risc0_zkvm::Executor::new(env, image)
     };
 
     let session = exec.run()?;

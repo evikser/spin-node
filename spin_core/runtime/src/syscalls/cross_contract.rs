@@ -31,7 +31,7 @@ impl Syscall for CrossContractCallHandler {
 
         let buf_ptr = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A3);
         let buf_len = syscall_ctx.load_register(risc0_zkvm_platform::syscall::reg_abi::REG_A4);
-        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len);
+        let from_guest = syscall_ctx.load_region(buf_ptr, buf_len).unwrap();
 
         let call = ContractCall::try_from_bytes(from_guest).expect("Invalid contract call");
 
